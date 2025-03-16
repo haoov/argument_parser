@@ -6,11 +6,24 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 20:14:21 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 12:51:38 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/16 14:39:45 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argparser.h"
+
+struct arg	*get_arg(struct arg *list, const char *name)
+{
+	while (list)
+	{
+		if (!strcmp(list->name, name))
+		{
+			return list;
+		}
+		list = list->next;
+	}
+	return NULL;
+}
 
 void	add_arg(struct arg **list, struct arg *arg)
 {

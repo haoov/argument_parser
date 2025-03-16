@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:07:56 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 12:51:20 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/16 14:46:23 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <err.h>
+#include <stdarg.h>
 
-#define ERR_INOPT	"invalid option"
-#define ERR_IVAL	"invalid value for"
+#define PERR_INOPT	"invalid option"
+#define PERR_IVAL	"invalid value"
 
 /* TYPES */
 typedef uint8_t (*check_ft)(const char *);
@@ -72,11 +73,11 @@ struct argparser
 					(*s == '-' && s[1]))
 
 /* FUNCTION DECLARATIONS */
-int		arg(struct arg **args, const char *name, int type, union argval val);
-int		exparg(char *name, char shval, char *lgval, int type);
-void	arg_err(struct arg *arg, const char *msg);
-struct	argparser	parse_args(const char **av);
-
-extern struct exparg	*explist;
+int			arg(struct arg **args, const char *name, int type, union argval val);
+struct arg	*get_arg(struct arg *list, const char *name);
+int			exparg(char *name, char shval, char *lgval, int type);
+void		arg_err(const char *fmt, ...);
+struct		argparser	parse_args(const char **av);
+void		clean_args(struct arg *args);
 
 #endif

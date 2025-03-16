@@ -1,30 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   arg_err.c                                          :+:      :+:    :+:   */
+/*   clean.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/15 19:00:18 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 14:26:46 by rasbbah          ###   ########.fr       */
+/*   Created: 2025/03/16 14:10:32 by rasbbah           #+#    #+#             */
+/*   Updated: 2025/03/16 14:46:39 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argparser.h"
 
-extern char	*__progname;
+extern struct exparg	*explist;
 
-void	arg_err(const char *fmt, ...)
+void	clean_expargs()
 {
-	va_list	ap;
+	struct exparg	*args, *next;
 
-	va_start(ap, fmt);
-	fprintf(stderr, "%s: ", __progname);
-	if (fmt)
+	args = explist;
+	while (args)
 	{
-		vfprintf(stderr, fmt, ap);
+		next = args->next;
+		free(args);
+		args = next;
 	}
-	fprintf(stderr, "\n");
-	va_end(ap);
+}
+
+void	clean_args(struct arg *args)
+{
+	struct arg	*next;
+
+	clean_expargs();
+	while (args)
+	{
+		next = args->next;
+		free(args);
+		args = next;
+	}
 }
 

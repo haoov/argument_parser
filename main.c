@@ -3,6 +3,7 @@
 int	main(int ac, const char **av)
 {
 	struct argparser	p;
+	struct arg			*arg;
 
 	exparg("host", 0, NULL, STR_T);
 	exparg("verbose", 'v', "verbose", BOOL_T);
@@ -12,26 +13,15 @@ int	main(int ac, const char **av)
 
 	p = parse_args(av);
 
-	struct arg	*cur = p.args;
+	arg = get_arg(p.args, "host");
+	if (arg) {printf("host: %s\n", arg->val.pval);}
+	arg = get_arg(p.args, "verbose");
+	if (arg) {printf("verbose: %d\n", arg->val.ival);}
+	arg = get_arg(p.args, "help");
+	if (arg) {printf("help: %d\n", arg->val.ival);}
+	arg = get_arg(p.args, "size");
+	if (arg) {printf("size: %d\n", arg->val.ival);}
 
-	while (cur)
-	{
-		printf("argument %s:\n", cur->name);
-		if (cur->type == BOOL_T)
-		{
-			printf("\tyes\n");
-		}
-		if (cur->type == INT_T)
-		{
-			printf("\tint value: %d\n", cur->val.ival);
-		}
-		else if (cur->type == STR_T)
-		{
-			printf("\tstring value: %s\n", cur->val.pval);
-		}
-		printf("\n");
-		cur = cur->next;
-	}
-
+	clean_args(p.args);
 	return 0;
 }

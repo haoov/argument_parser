@@ -6,11 +6,13 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 19:48:48 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 13:41:51 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/16 14:47:08 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argparser.h"
+
+extern struct exparg	*explist;
 
 struct exparg	*get_exparg()
 {
@@ -21,6 +23,7 @@ struct exparg	*get_exparg()
 	{
 		if (!cur->shval && !cur->lgval &&!cur->found)
 		{
+			cur->found = 1;
 			return cur;
 		}
 		cur = cur->next;
@@ -43,11 +46,11 @@ struct exparg	*get_expopt(const char *str)
 			(!strncmp(cur->lgval, str, strlen(cur->lgval)) ||
 			*str == cur->shval))
 		{
-			break;
+			return cur;
 		}
 		cur = cur->next;
 	}
-	return cur;
+	return NULL;
 }
 
 union argval	get_optval(int type, const char **av, int *i, size_t pos)
@@ -58,19 +61,16 @@ union argval	get_optval(int type, const char **av, int *i, size_t pos)
 	if (type == BOOL_T)
 	{
 		val.ival = 1;
-		printf("[DEBUG] value = %d\n", val.ival);
 		return val;
 	}
 	sval = av[*i][pos] ? av[*i] + pos : av[++(*i)];
 	if (type == INT_T)
 	{
 		val.ival = atoi(sval);
-		printf("[DEBUG] value = %d\n", val.ival);
 	}
 	else
 	{
 		val.pval = sval;
-		printf("[DEBUG] value = %s\n", val.pval);
 	}
 	return val;
 }
@@ -82,10 +82,10 @@ int	parse_shopt(struct arg **args, const char **av, int *i)
 
 	for (int j = 1; av[*i][j]; ++j)
 	{
-		printf("[DEBUG] current option = %c\n", av[*i][j]);
 		exp = get_expopt(&av[*i][j]);
 		if (!exp)
 		{
+			arg_err("%s '-%c'\n", PERR_INOPT, av[*i][j]);
 			return -1;
 		}
 		val = get_optval(exp->type, av, i, j + 1);
@@ -103,8 +103,6 @@ int	parse_arg(struct arg **args, const char **av, int *i)
 	struct exparg	*exp;
 	union argval	val;
 
-	printf("[DEBUG] string = %s\n", av[*i]);
-	printf("[DEBUG] is option = %d\n", IS_OPT(av[*i]));
 	if (IS_OPT(av[*i]))
 	{
 		if (av[*i][1] != '-')
@@ -116,6 +114,7 @@ int	parse_arg(struct arg **args, const char **av, int *i)
 			exp = get_expopt(av[*i]);
 			if (!exp)
 			{
+				arg_err("%s '--%s'\n", PERR_INOPT, av[*i] + 2);
 				return -1;
 			}
 		}
@@ -133,7 +132,6 @@ int	parse_arg(struct arg **args, const char **av, int *i)
 		else
 		{
 			val.pval = av[*i];
-			printf("[DEBUG] value = %s\n", val.pval);
 		}
 		return arg(args, exp->name, exp->type, val);
 	}
@@ -148,7 +146,6 @@ struct argparser	parse_args(const char **av)
 	p.err = 0;
 	for (int i = 1; av[i]; ++i)
 	{
-		printf("%s\n", av[i]);
 		p.err = parse_arg(&p.args, av, &i);
 		if (p.err)
 		{

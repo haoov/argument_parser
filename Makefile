@@ -4,7 +4,6 @@ TARGET	:=	argparser.a
 # Compiler
 CC		:= cc
 CFLAGS	:= -Wall -Wextra -Werror
-CINC	:= -I $(INC_DIR)
 
 # Files
 INC_DIR	:= inc
@@ -20,10 +19,11 @@ all : $(TARGET)
 # Create library archive
 $(TARGET) : $(OBJS) | $(BIN_DIR)
 	ar -src $@ $^
+	mv $(TARGET) $(BIN_DIR)
 
 # Compile to object files
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(CINC) $< -o $@
+	$(CC) $(CFLAGS) -I $(INC_DIR) -c $< -o $@
 
 # Create directory
 $(OBJ_DIR) $(BIN_DIR) :

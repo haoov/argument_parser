@@ -5,170 +5,155 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/14 15:50:34 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/14 18:41:02 by rasbbah          ###   ########.fr       */
+/*   Created: 2025/03/15 19:48:48 by rasbbah           #+#    #+#             */
+/*   Updated: 2025/03/16 13:41:51 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "argparser.h"
 
-/* Return pointer to first empty argument in list 'list' 
- * or NULL if no empty arg was found
- * */
-struct arg	*empty_arg(struct arg *list)
+struct exparg	*get_exparg()
 {
-	while (list->next)
+	struct exparg	*cur;
+
+	cur = explist;
+	while (cur)
 	{
-		if (!list->opt && !list->sval)
+		if (!cur->shval && !cur->lgval &&!cur->found)
 		{
-			return list;
+			return cur;
 		}
+		cur = cur->next;
 	}
 	return NULL;
 }
 
-/* Return the arg corresponding to the option
- * or NULL if no arg was found
- * */
-struct arg	*get_opt(struct arg *list, const char *val)
+struct exparg	*get_expopt(const char *str)
 {
-	while (list->next)
+	struct exparg	*cur;
+
+	while (*str == '-')
 	{
-		if (!strcmp(val, list->lgval) || *val == *list->shval)
+		++str;
+	}
+	cur = explist;
+	while (cur)
+	{
+		if ((cur->lgval || cur->shval) &&
+			(!strncmp(cur->lgval, str, strlen(cur->lgval)) ||
+			*str == cur->shval))
 		{
-			return list;
+			break;
 		}
+		cur = cur->next;
 	}
-	return NULL;
+	return cur;
 }
 
-int	parse_arg(struct arg *list, const char *val)
+union argval	get_optval(int type, const char **av, int *i, size_t pos)
 {
-	struct arg	*arg;
+	union argval	val;
+	const char		*sval;
 
-	arg = empty_arg(list);
-	// To many argument where passed => ignore it
-	if (!arg)
+	if (type == BOOL_T)
 	{
-		return 0;
+		val.ival = 1;
+		printf("[DEBUG] value = %d\n", val.ival);
+		return val;
 	}
-	arg->sval = val;
-	if (arg->check && !arg->check(val))
+	sval = av[*i][pos] ? av[*i] + pos : av[++(*i)];
+	if (type == INT_T)
 	{
-		fprintf(STDERR_FILENO, "%s: %s `%s`\n", __progname, arg->err, arg->val);
-		return -1;
+		val.ival = atoi(sval);
+		printf("[DEBUG] value = %d\n", val.ival);
 	}
+	else
+	{
+		val.pval = sval;
+		printf("[DEBUG] value = %s\n", val.pval);
+	}
+	return val;
 }
 
-int	get_opt_val(struct arg *opt, const char *str)
+int	parse_shopt(struct arg **args, const char **av, int *i)
 {
-	if (opt->check && !opt->check(str))
+	struct exparg	*exp;
+	union argval	val;
+
+	for (int j = 1; av[*i][j]; ++j)
 	{
-		return -1
-	}
-	switch (opt->type)
-	{
-		case TYPE_INT:
-			opt->ival = atoi(str);
-			break;
-		case TYPE_PTR:
-			opt->sval = str;
-			break;
-		default: break;
+		printf("[DEBUG] current option = %c\n", av[*i][j]);
+		exp = get_expopt(&av[*i][j]);
+		if (!exp)
+		{
+			return -1;
+		}
+		val = get_optval(exp->type, av, i, j + 1);
+		arg(args, exp->name, exp->type, val);
+		if (exp->type != BOOL_T)
+		{
+			return 0;
+		}
 	}
 	return 0;
 }
 
-int	parse_lgopt(struct arg *list, const char **argv, int *i)
+int	parse_arg(struct arg **args, const char **av, int *i)
 {
-	struct arg	*opt;
-	size_t		optlen;
-	int			err;
+	struct exparg	*exp;
+	union argval	val;
 
-	opt = get_opt(list, argv[*i]);
-	if (!opt)
+	printf("[DEBUG] string = %s\n", av[*i]);
+	printf("[DEBUG] is option = %d\n", IS_OPT(av[*i]));
+	if (IS_OPT(av[*i]))
 	{
-		fprintf(STDERR_FILENO, "%s: %s '--%s'\n",
-				__progname, ERR_UNOPT, argv[*i]);
-		return -1;
-	}
-	optlen = strlen(opt->lgval);
-	if (*(argv[*i] + optlen))
-	{
-
-	}
-}
-
-int	parse_shopt(struct arg *list, const char **argv, int *i)
-{
-	struct arg	*opt;
-	int			err;
-
-	opt = get_opt(list, argv[*i]);
-	while (opt)
-	{
-		if (opt->type == TYPE_BOOL)
+		if (av[*i][1] != '-')
 		{
-			opt->ival = 1;
-			opt = get_opt(++argv[*i]);
+			return parse_shopt(args, av, i);
 		}
 		else
 		{
-			if (argv[*i][1])
+			exp = get_expopt(av[*i]);
+			if (!exp)
 			{
-				err = get_opt_val(opt, argv[*i] + 1);
-			}
-			else
-			{
-				*i++;
-				err = get_opt_val(opt, argv[*i]);
-			}
-			if (err)
-			{
-				fprintf(STDERR_FILENO, "%s: %s `%s`\n", __progname,
-						ERR_INVAL, 
 				return -1;
 			}
-			return 0;
 		}
-	}
-	fprintf(STDERR_FILENO, "%s: %s '-%s'\n", __progname, ERR_INOPT, argv[*i]);
-	return -1;
-}
-
-int	parse_opt(struct arg *list, const char **argv, int *i)
-{
-	int			sh;
-	struct arg	*opt;
-
-	sh = argv[*i][1] != '-' ? 1 : 0;
-	argv[*i] += sh ? 1 : 2;
-	if (sh)
-	{
-		return parse_shopt(list, str, i);
 	}
 	else
 	{
-		return parse_lgopt(list, str, i);
+		exp = get_exparg();
 	}
+	if (exp)
+	{
+		if (exp->lgval)
+		{
+			val = get_optval(exp->type, av, i, strlen(exp->lgval) + 2);
+		}
+		else
+		{
+			val.pval = av[*i];
+			printf("[DEBUG] value = %s\n", val.pval);
+		}
+		return arg(args, exp->name, exp->type, val);
+	}
+	return 0;
 }
 
-int	parse_argv(struct arg *list, const char **argv)
+struct argparser	parse_args(const char **av)
 {
-	for (int i = 0; argv[i]; ++i)
+	struct argparser	p;
+
+	p.args = NULL;
+	p.err = 0;
+	for (int i = 1; av[i]; ++i)
 	{
-		if (IS_OPT(argv[i]))
+		printf("%s\n", av[i]);
+		p.err = parse_arg(&p.args, av, &i);
+		if (p.err)
 		{
-			if (parse_opt(list, argv, &i) == -1)
-			{
-				return -1;
-			}
+			break;
 		}
-		else if (parse_arg(list, argv[i]) == -1)
-		{
-			return -1;
-		}
-		++i;
 	}
-	return check_args(list);
+	return p;
 }

@@ -15,10 +15,10 @@ int	main(int ac, const char **av)
 	{
 		exit(1);
 	}
-	add_argument(p, "host", 0, NULL, STR_T),
-	add_argument(p, "verbose", 'v', "verbose", BOOL_T),
-	add_argument(p, "help", '?', "help", BOOL_T);
-	add_argument(p, "size", 's', "size", INT_T),
+	add_argument(p, "host", 0, NULL, STR_T, (argval_t)"test_host"),
+	add_argument(p, "verbose", 'v', "verbose", BOOL_T, (argval_t)false),
+	add_argument(p, "help", '?', "help", BOOL_T, (argval_t)false);
+	add_argument(p, "size", 's', "size", INT_T, (argval_t)56),
 	parse_args(p, av);
 
 	host = get_strarg(p->args, "host");

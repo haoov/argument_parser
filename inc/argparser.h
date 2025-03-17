@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:07:56 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 18:29:02 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 20:00:55 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,11 @@ enum argtype
 	STR_T
 };
 
-union argval
+typedef union argval
 {
 	int			ival;
-	const char	*pval;
-};
+	char	*pval;
+} argval_t;
 
 /* Struct to store arguments */
 struct arg
@@ -56,7 +56,8 @@ struct arg
 	char			*lgval;	// Long option value
 	enum argtype	 type;	// Type of argument
 	bool			found;	// Argument has been found
-	union argval	val;	// Argument value
+	argval_t		val;	// Argument value
+	argval_t		def;	// Default value if not found
 	struct arg		*next;	// Pointer to next arg
 };
 
@@ -74,7 +75,7 @@ struct argparser
 /* FUNCTION DECLARATIONS */
 struct argparser	*new_parser();
 void				add_argument(struct argparser *p, char *name,
-									char sh, char *lg, int type);
+									char sh, char *lg, int type, argval_t def);
 const char			*get_strarg(struct arg *list, const char *name);
 int					get_intarg(struct arg *list, const char *name);
 void				arg_err(const char *fmt, ...);

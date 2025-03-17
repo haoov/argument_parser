@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 20:14:21 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 18:39:41 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 19:55:10 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	arglist_add(struct arg **list, struct arg *arg)
 	}
 }
 
-struct arg	*new_arg(char *name, char sh, char *lg, int type)
+struct arg	*new_arg(char *name, char sh, char *lg, int type, argval_t def)
 {
 	struct arg	*new;
 
@@ -71,16 +71,17 @@ struct arg	*new_arg(char *name, char sh, char *lg, int type)
 	new->shval = sh;
 	new->lgval = lg;
 	new->type = type;
+	new->val = def;
 	new->next = NULL;
 	return new;
 }
 
 void	add_argument(struct argparser *p, char *name,
-						char sh, char *lg, int type)
+						char sh, char *lg, int type, argval_t def)
 {
 	struct arg	*arg;
 
-	arg = new_arg(name, sh, lg, type);
+	arg = new_arg(name, sh, lg, type, def);
 	if (!arg)
 	{
 		p->err = true;

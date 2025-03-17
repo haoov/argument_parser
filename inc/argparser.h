@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:07:56 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 12:27:51 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 13:11:46 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 
 #define PERR_INOPT	"invalid option"
 #define PERR_IVAL	"invalid value"
+#define PERR_REQARG	"option requires an argument"
 
 /* TYPES */
 typedef uint8_t (*check_ft)(const char *);

@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 19:48:48 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 13:02:21 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 13:20:15 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,15 +52,18 @@ struct exparg	*get_expopt(const char *str)
 union argval	get_optval(struct exparg *exp,
 							const char **av, int *i, size_t pos)
 {
-	union argval	val;
 	const char		*sval;
 
 	if (exp->type == BOOL_T)
 	{
-		val.ival = 1;
-		return val;
+		return (union argval)1;
 	}
 	sval = av[*i][pos] ? av[*i] + pos : av[++(*i)];
+	if (!sval || !*sval)
+	{
+		arg_err("%s `%s`", PERR_REQARG, exp->name);
+		return (union argval)-1;
+	}
 	if (exp->check && !exp->check(sval))
 	{
 		arg_err("%s for %s `%s`", PERR_IVAL, exp->name, sval);
@@ -68,13 +71,12 @@ union argval	get_optval(struct exparg *exp,
 	}
 	if (exp->type == INT_T)
 	{
-		val.ival = atoi(sval);
+		return (union argval)atoi(sval);
 	}
 	else
 	{
-		val.pval = sval;
+		return (union argval)sval;
 	}
-	return val;
 }
 
 int	parse_shopt(struct arg **args, const char **av, int *i)
@@ -123,6 +125,10 @@ int	parse_lgopt(struct arg **args, const char **av, int *i)
 		++pos;
 	}
 	val = get_optval(exp, av, i, pos);
+	if (val.ival == -1)
+	{
+		return -1;
+	}
 	return arg(args, exp->name, exp->type, val);
 }
 

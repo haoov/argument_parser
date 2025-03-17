@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:07:56 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 14:46:23 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 12:27:51 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ struct exparg
 	char			shval;	// Short option value
 	char			*lgval;	// Long option value
 	enum argtype	 type;	// Type of argument
+	check_ft		check;	// Function to check argument's value
 	uint8_t			found;	// Argument has been found
 	struct exparg	*next;	// Pointer to next arg
 };
@@ -75,9 +76,10 @@ struct argparser
 /* FUNCTION DECLARATIONS */
 int			arg(struct arg **args, const char *name, int type, union argval val);
 struct arg	*get_arg(struct arg *list, const char *name);
-int			exparg(char *name, char shval, char *lgval, int type);
+int			exparg(char *name, char shval,
+					char *lgval, int type, check_ft check);
 void		arg_err(const char *fmt, ...);
 struct		argparser	parse_args(const char **av);
-void		clean_args(struct arg *args);
+void		free_args(struct arg *args);
 
 #endif

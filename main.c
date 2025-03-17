@@ -1,14 +1,29 @@
 #include "argparser.h"
+#include <ctype.h>
+#include <stdbool.h>
+
+uint8_t	isallnum(const char *s)
+{
+	while (*s)
+	{
+		if (!isdigit(*s))
+		{
+			return false;
+		}
+		++s;
+	}
+	return true;
+}
 
 int	main(int ac, const char **av)
 {
 	struct argparser	p;
 	struct arg			*arg;
 
-	exparg("host", 0, NULL, STR_T);
-	exparg("verbose", 'v', "verbose", BOOL_T);
-	exparg("help", '?', "help", BOOL_T);
-	exparg("size", 's', "size", INT_T);
+	exparg("host", 0, NULL, STR_T, NULL);
+	exparg("verbose", 'v', "verbose", BOOL_T, NULL);
+	exparg("help", '?', "help", BOOL_T, NULL);
+	exparg("size", 's', "size", INT_T, isallnum);
 
 
 	p = parse_args(av);
@@ -22,6 +37,6 @@ int	main(int ac, const char **av)
 	arg = get_arg(p.args, "size");
 	if (arg) {printf("size: %d\n", arg->val.ival);}
 
-	clean_args(p.args);
+	free_args(p.args);
 	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 19:48:48 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 14:47:08 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 13:02:21 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,6 @@ struct exparg	*get_expopt(const char *str)
 {
 	struct exparg	*cur;
 
-	while (*str == '-')
-	{
-		++str;
-	}
 	cur = explist;
 	while (cur)
 	{
@@ -53,18 +49,24 @@ struct exparg	*get_expopt(const char *str)
 	return NULL;
 }
 
-union argval	get_optval(int type, const char **av, int *i, size_t pos)
+union argval	get_optval(struct exparg *exp,
+							const char **av, int *i, size_t pos)
 {
 	union argval	val;
 	const char		*sval;
 
-	if (type == BOOL_T)
+	if (exp->type == BOOL_T)
 	{
 		val.ival = 1;
 		return val;
 	}
 	sval = av[*i][pos] ? av[*i] + pos : av[++(*i)];
-	if (type == INT_T)
+	if (exp->check && !exp->check(sval))
+	{
+		arg_err("%s for %s `%s`", PERR_IVAL, exp->name, sval);
+		return (union argval)-1;
+	}
+	if (exp->type == INT_T)
 	{
 		val.ival = atoi(sval);
 	}
@@ -85,10 +87,14 @@ int	parse_shopt(struct arg **args, const char **av, int *i)
 		exp = get_expopt(&av[*i][j]);
 		if (!exp)
 		{
-			arg_err("%s '-%c'\n", PERR_INOPT, av[*i][j]);
+			arg_err("%s '-%c'", PERR_INOPT, av[*i][j]);
 			return -1;
 		}
-		val = get_optval(exp->type, av, i, j + 1);
+		val = get_optval(exp, av, i, j + 1);
+		if (val.ival == -1)
+		{
+			return -1;
+		}
 		arg(args, exp->name, exp->type, val);
 		if (exp->type != BOOL_T)
 		{
@@ -96,6 +102,28 @@ int	parse_shopt(struct arg **args, const char **av, int *i)
 		}
 	}
 	return 0;
+}
+
+int	parse_lgopt(struct arg **args, const char **av, int *i)
+{
+	struct exparg	*exp;
+	union argval	val;
+	size_t			pos;
+
+	pos = 2;
+	exp = get_expopt(av[*i] + pos);
+	if (!exp)
+	{
+		arg_err("%s '--%s'", PERR_INOPT, av[*i] + pos);
+		return -1;
+	}
+	pos += strlen(exp->lgval);
+	if (av[*i][pos] == '=' || av[*i][pos] == ' ')
+	{
+		++pos;
+	}
+	val = get_optval(exp, av, i, pos);
+	return arg(args, exp->name, exp->type, val);
 }
 
 int	parse_arg(struct arg **args, const char **av, int *i)
@@ -111,31 +139,19 @@ int	parse_arg(struct arg **args, const char **av, int *i)
 		}
 		else
 		{
-			exp = get_expopt(av[*i]);
-			if (!exp)
-			{
-				arg_err("%s '--%s'\n", PERR_INOPT, av[*i] + 2);
-				return -1;
-			}
+			return parse_lgopt(args, av, i);
 		}
 	}
 	else
 	{
 		exp = get_exparg();
-	}
-	if (exp)
-	{
-		if (exp->lgval)
+		if (!exp)
 		{
-			val = get_optval(exp->type, av, i, strlen(exp->lgval) + 2);
+			return 0;
 		}
-		else
-		{
-			val.pval = av[*i];
-		}
-		return arg(args, exp->name, exp->type, val);
+		val.pval = av[*i];
 	}
-	return 0;
+	return arg(args, exp->name, exp->type, val);
 }
 
 struct argparser	parse_args(const char **av)

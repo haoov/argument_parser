@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/16 14:10:32 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/16 14:46:39 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 10:07:55 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 extern struct exparg	*explist;
 
-void	clean_expargs()
+void	free_expargs()
 {
 	struct exparg	*args, *next;
 
@@ -27,11 +27,11 @@ void	clean_expargs()
 	}
 }
 
-void	clean_args(struct arg *args)
+void	free_args(struct arg *args)
 {
 	struct arg	*next;
 
-	clean_expargs();
+	free_expargs();
 	while (args)
 	{
 		next = args->next;

@@ -2,38 +2,33 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-uint8_t	isallnum(const char *s)
-{
-	while (*s)
-	{
-		if (!isdigit(*s))
-		{
-			return false;
-		}
-		++s;
-	}
-	return true;
-}
-
 int	main(int ac, const char **av)
 {
-	struct argparser	p;
-	struct arg			*arg;
+	struct argparser	*p;
+	const char			*host;
+	int					help;
+	int					verbose;
+	int					size;
 
-	exparg("host", 0, NULL, STR_T),
-	exparg("verbose", 'v', "verbose", BOOL_T),
-	exparg("size", 's', "size", INT_T),
-	p = parse_args(av);
+	p = new_parser();
+	if (!p)
+	{
+		exit(1);
+	}
+	add_argument(p, "host", 0, NULL, STR_T),
+	add_argument(p, "verbose", 'v', "verbose", BOOL_T),
+	add_argument(p, "help", '?', "help", BOOL_T);
+	add_argument(p, "size", 's', "size", INT_T),
+	parse_args(p, av);
 
-	arg = get_arg(p.args, "host");
-	if (arg) {printf("host: %s\n", arg->val.pval);}
-	arg = get_arg(p.args, "verbose");
-	if (arg) {printf("verbose: %d\n", arg->val.ival);}
-	arg = get_arg(p.args, "help");
-	if (arg) {printf("help: %d\n", arg->val.ival);}
-	arg = get_arg(p.args, "size");
-	if (arg) {printf("size: %d\n", arg->val.ival);}
+	host = get_strarg(p->args, "host");
+	help = get_intarg(p->args, "help");
+	verbose = get_intarg(p->args, "verbose");
+	size = get_intarg(p->args, "size");
 
-	free_args(p.args);
+	printf("host: %s\nhelp: %d\nverbose: %d\nsize: %d\n",
+			host, help, verbose, size);
+
+	free_parser(p);
 	return 0;
 }

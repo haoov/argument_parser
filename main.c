@@ -20,12 +20,9 @@ int	main(int ac, const char **av)
 	struct argparser	p;
 	struct arg			*arg;
 
-	exparg("host", 0, NULL, STR_T, NULL);
-	exparg("verbose", 'v', "verbose", BOOL_T, NULL);
-	exparg("help", '?', "help", BOOL_T, NULL);
-	exparg("size", 's', "size", INT_T, isallnum);
-
-
+	exparg("host", 0, NULL, STR_T),
+	exparg("verbose", 'v', "verbose", BOOL_T),
+	exparg("size", 's', "size", INT_T),
 	p = parse_args(av);
 
 	arg = get_arg(p.args, "host");

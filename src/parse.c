@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 19:48:48 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 13:20:15 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 17:12:11 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ struct exparg	*get_exparg()
 	{
 		if (!cur->shval && !cur->lgval &&!cur->found)
 		{
-			cur->found = 1;
+			cur->found = true;
 			return cur;
 		}
 		cur = cur->next;
@@ -49,10 +49,28 @@ struct exparg	*get_expopt(const char *str)
 	return NULL;
 }
 
+int	get_int_value(const char *str, bool *err)
+{
+	long	lval;
+	char	*endptr;
+
+	*err = false;
+	errno = 0;
+	lval = strtol(str, &endptr, 10);
+	if (errno || *endptr != '\0' || str == endptr ||
+		lval > (long)INT_MAX || lval < (long)INT_MIN)
+	{
+		*err = true;
+	}
+	return (int)lval;
+}
+
 union argval	get_optval(struct exparg *exp,
 							const char **av, int *i, size_t pos)
 {
+	int				ival;
 	const char		*sval;
+	bool			err;
 
 	if (exp->type == BOOL_T)
 	{
@@ -64,14 +82,15 @@ union argval	get_optval(struct exparg *exp,
 		arg_err("%s `%s`", PERR_REQARG, exp->name);
 		return (union argval)-1;
 	}
-	if (exp->check && !exp->check(sval))
-	{
-		arg_err("%s for %s `%s`", PERR_IVAL, exp->name, sval);
-		return (union argval)-1;
-	}
 	if (exp->type == INT_T)
 	{
-		return (union argval)atoi(sval);
+		ival = get_int_value(sval, &err);
+		if (err)
+		{
+			arg_err("%s for %s `%s`", PERR_IVAL, exp->name, sval);
+			return (union argval)-1;
+		}
+		return (union argval)ival;
 	}
 	else
 	{

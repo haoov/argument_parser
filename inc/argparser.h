@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:07:56 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 13:11:46 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 17:00:24 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,19 @@
 #include <unistd.h>
 #include <err.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <limits.h>
+
+#define ERROR	-1
+#define SUCCESS	0
 
 #define PERR_INOPT	"invalid option"
 #define PERR_IVAL	"invalid value"
 #define PERR_REQARG	"option requires an argument"
 
 /* TYPES */
-typedef uint8_t (*check_ft)(const char *);
+typedef bool	(*check_ft)(const char *);
 typedef void	(*act_ft)(void*, void*);
 
 enum argtype
@@ -36,6 +42,12 @@ enum argtype
 	STR_T
 };
 
+union argval
+{
+	int			ival;
+	const char	*pval;
+};
+
 /* Struct to store expected arguments */
 struct exparg
 {
@@ -43,15 +55,8 @@ struct exparg
 	char			shval;	// Short option value
 	char			*lgval;	// Long option value
 	enum argtype	 type;	// Type of argument
-	check_ft		check;	// Function to check argument's value
-	uint8_t			found;	// Argument has been found
+	bool			found;	// Argument has been found
 	struct exparg	*next;	// Pointer to next arg
-};
-
-union argval
-{
-	int			ival;
-	const char	*pval;
 };
 
 /* Struct to store parsed arguments */
@@ -77,8 +82,7 @@ struct argparser
 /* FUNCTION DECLARATIONS */
 int			arg(struct arg **args, const char *name, int type, union argval val);
 struct arg	*get_arg(struct arg *list, const char *name);
-int			exparg(char *name, char shval,
-					char *lgval, int type, check_ft check);
+int			exparg(char *name, char shval, char *lgval, int type);
 void		arg_err(const char *fmt, ...);
 struct		argparser	parse_args(const char **av);
 void		free_args(struct arg *args);

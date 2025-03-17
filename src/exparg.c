@@ -6,7 +6,7 @@
 /*   By: rasbbah <rsabbah@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/15 19:23:37 by rasbbah           #+#    #+#             */
-/*   Updated: 2025/03/17 12:28:20 by rasbbah          ###   ########.fr       */
+/*   Updated: 2025/03/17 16:22:51 by rasbbah          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 
 struct exparg	*explist = NULL;
 
-struct exparg	*new_exparg(char *name, char shval,
-							char *lgval, int type, check_ft check)
+struct exparg	*new_exparg(char *name, char shval, char *lgval, int type)
 {
 	struct exparg	*new;
 
@@ -28,7 +27,6 @@ struct exparg	*new_exparg(char *name, char shval,
 	new->shval = shval;
 	new->lgval = lgval;
 	new->type = type;
-	new->check = check;
 	new->next = NULL;
 	return new;
 }
@@ -52,11 +50,11 @@ void	add_exparg(struct exparg *arg)
 	}
 }
 
-int	exparg(char *name, char shval, char *lgval, int type, check_ft check)
+int	exparg(char *name, char shval, char *lgval, int type)
 {
 	struct exparg	*arg;
 
-	arg = new_exparg(name, shval, lgval, type, check);
+	arg = new_exparg(name, shval, lgval, type);
 	if (!arg)
 	{
 		return -1;
